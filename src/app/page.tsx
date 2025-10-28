@@ -465,9 +465,15 @@ const Dashboard = ({
     else if (filters.startDate && filters.endDate) {
       const startDate = new Date(filters.startDate);
       const endDate = new Date(filters.endDate);
+      // Set time to start of day for start date and end of day for end date
+      startDate.setHours(0, 0, 0, 0);
+      endDate.setHours(23, 59, 59, 999);
+
       filtered = filtered.filter((item) => {
         const itemDate = parse(item.workDate, "MMM d, yyyy", new Date());
         if (isNaN(itemDate.getTime())) return false;
+        // Set time to start of day for comparison
+        itemDate.setHours(0, 0, 0, 0);
         return itemDate >= startDate && itemDate <= endDate;
       });
     }
@@ -476,13 +482,31 @@ const Dashboard = ({
       filtered = filtered.filter((item) => {
         const itemDate = parse(item.workDate, "MMM d, yyyy", new Date());
         if (isNaN(itemDate.getTime())) return false;
+
         switch (filters.timeRange) {
-          case "week":
-            return itemDate >= startOfWeek(now);
-          case "month":
-            return itemDate >= startOfMonth(now);
-          case "year":
-            return itemDate >= startOfYear(now);
+          case "week": {
+            const weekStart = startOfWeek(now, { weekStartsOn: 1 }); // Monday as start of week
+            const weekEnd = new Date(weekStart);
+            weekEnd.setDate(weekEnd.getDate() + 6);
+            weekEnd.setHours(23, 59, 59, 999);
+            return itemDate >= weekStart && itemDate <= weekEnd;
+          }
+          case "month": {
+            const monthStart = startOfMonth(now);
+            const monthEnd = new Date(monthStart);
+            monthEnd.setMonth(monthEnd.getMonth() + 1);
+            monthEnd.setDate(0); // Last day of current month
+            monthEnd.setHours(23, 59, 59, 999);
+            return itemDate >= monthStart && itemDate <= monthEnd;
+          }
+          case "year": {
+            const yearStart = startOfYear(now);
+            const yearEnd = new Date(yearStart);
+            yearEnd.setFullYear(yearEnd.getFullYear() + 1);
+            yearEnd.setDate(0); // Last day of current year
+            yearEnd.setHours(23, 59, 59, 999);
+            return itemDate >= yearStart && itemDate <= yearEnd;
+          }
           default:
             return true;
         }
@@ -568,23 +592,35 @@ const Dashboard = ({
 
     const now = new Date();
     let startDate: Date;
+    let endDate: Date;
 
     switch (timeRange) {
-      case "week":
-        startDate = startOfWeek(now);
+      case "week": {
+        startDate = startOfWeek(now, { weekStartsOn: 1 }); // Monday as start of week
+        endDate = new Date(startDate);
+        endDate.setDate(endDate.getDate() + 6);
         break;
-      case "month":
+      }
+      case "month": {
         startDate = startOfMonth(now);
+        endDate = new Date(startDate);
+        endDate.setMonth(endDate.getMonth() + 1);
+        endDate.setDate(0); // Last day of current month
         break;
-      case "year":
+      }
+      case "year": {
         startDate = startOfYear(now);
+        endDate = new Date(startDate);
+        endDate.setFullYear(endDate.getFullYear() + 1);
+        endDate.setDate(0); // Last day of current year
         break;
+      }
       default:
         return "";
     }
 
     return `${format(startDate, "MMM d, yyyy")} - ${format(
-      now,
+      endDate,
       "MMM d, yyyy"
     )}`;
   };
