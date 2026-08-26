@@ -1,26 +1,181 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/* Class-based dark mode (Tailwind v4 defaults to prefers-color-scheme). */
+@custom-variant dark (&:where(.dark, .dark *));
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-elevated: var(--elevated);
+  --color-sunken: var(--sunken);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-brand: var(--brand);
+  --color-brand-hover: var(--brand-hover);
+  --color-brand-fg: var(--brand-fg);
+  --color-brand-soft: var(--brand-soft);
+  --color-pos: var(--pos);
+  --color-neg: var(--neg);
+  --color-warn: var(--warn);
+  --color-grid: var(--grid);
+
+  --font-sans: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, SFMono-Regular, monospace;
+
+  --radius-card: 14px;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* ---------- Light (warm neutral, off-white) ---------- */
+:root {
+  --canvas: #f7f7f5;
+  --surface: #ffffff;
+  --elevated: #f2f1ee;
+  --sunken: #ecebe6;
+  --line: #e4e3dd;
+  --line-strong: #c9c8bf;
+  --ink: #0b0b0b;
+  --ink-2: #52514e;
+  --ink-3: #85837d;
+  --brand: #047857;
+  --brand-hover: #036049;
+  --brand-fg: #ffffff;
+  --brand-soft: rgba(4, 120, 87, 0.1);
+  --pos: #026e26;
+  --neg: #b3261e;
+  --warn: #9a6400;
+  --grid: #e8e7e1;
+  color-scheme: light;
+}
+
+/* ---------- Dark (true near-black, zero blue cast) ---------- */
+.dark {
+  --canvas: #0d0d0d;
+  --surface: #1a1a19;
+  --elevated: #232321;
+  --sunken: #131312;
+  --line: #2c2c2a;
+  --line-strong: #3d3d3a;
+  --ink: #ffffff;
+  --ink-2: #c3c2b7;
+  --ink-3: #8d8b84;
+  --brand: #10b981;
+  --brand-hover: #34d399;
+  --brand-fg: #062b20;
+  --brand-soft: rgba(16, 185, 129, 0.14);
+  --pos: #0ca30c;
+  --neg: #f0736c;
+  --warn: #fab219;
+  --grid: #262624;
+  color-scheme: dark;
+}
+
+@layer base {
+  /* v4 borders default to currentColor; anchor them to the token. */
+  *,
+  ::before,
+  ::after {
+    border-color: var(--line);
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background: var(--canvas);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    overscroll-behavior-y: none;
+  }
+
+  ::selection {
+    background: var(--brand-soft);
+    color: var(--ink);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--brand);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  /* Tailwind v4's preflight sets buttons to `cursor: default`. Every control
+     in this app should read as clickable. */
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  [role="menuitemradio"],
+  [role="option"],
+  [role="radio"],
+  select:not(:disabled),
+  summary,
+  label[for],
+  input[type="checkbox"],
+  input[type="date"] {
+    cursor: pointer;
+  }
+
+  button:disabled,
+  select:disabled {
+    cursor: not-allowed;
+  }
+
+  /* Figures align in columns everywhere they carry meaning. */
+  .tnum {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
+  }
+
+  /* The indicator already follows `color-scheme`, so it must NOT be inverted:
+     doing so turned the white dark-mode icon black and hid it. */
+  input[type="date"]::-webkit-calendar-picker-indicator {
+    opacity: 0.65;
+    cursor: pointer;
+    transition: opacity 150ms;
+  }
+  input[type="date"]:hover::-webkit-calendar-picker-indicator,
+  input[type="date"]:focus::-webkit-calendar-picker-indicator {
+    opacity: 1;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer utilities {
+  .scrollbar-slim {
+    scrollbar-width: thin;
+    scrollbar-color: var(--line-strong) transparent;
+  }
+  .scrollbar-slim::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  .scrollbar-slim::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .scrollbar-slim::-webkit-scrollbar-thumb {
+    background: var(--line-strong);
+    border-radius: 99px;
+  }
+
+  /* Recharts leaves a focus rect on the svg root when activated. */
+  .recharts-wrapper:focus,
+  .recharts-surface:focus {
+    outline: none;
+  }
+  .recharts-sector:focus,
+  .recharts-rectangle:focus {
+    outline: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }

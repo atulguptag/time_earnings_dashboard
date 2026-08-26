@@ -39,3 +39,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Personal earnings data - never commit
+*.csv
+!sample*.csv
+
+# verification build output
+.verify/
